@@ -28,20 +28,19 @@ require 'nokogiri'
 
 class PassengerMetrics < Sensu::Plugin::Metric::CLI::Graphite
   option :scheme,
-         :description => "Metric naming scheme, text to prepend to metric",
-         :long        => "--scheme SCHEME",
-         :default     => "#{Socket.gethostname}.passenger"
+         description: 'Metric naming scheme, text to prepend to metric',
+         long: '--scheme SCHEME',
+         default: "#{Socket.gethostname}.passenger"
 
   def output_process(process, app_group, count, timestamp)
     processed = process.xpath('.//processed')[0].children.to_s
     pid = process.xpath('.//pid')[0].children.to_s
     memory_node = process.xpath('.//real_memory')
-    if !memory_node.empty?
+    unless memory_node.empty?
       memory = memory_node[0].children.to_s
     end
     cpu_percent = process.xpath('.//cpu')[0].children.to_s
-    start_time = Time.at(process.xpath('.//spawn_end_time').children[0].to_s.to_i/1000000)
-    last_used = Time.at(process.xpath('.//last_used').children[0].to_s.to_i/1000000)
+    start_time = Time.at(process.xpath('.//spawn_end_time').children[0].to_s.to_i / 100_000_0)
     uptime = Integer(Time.at(timestamp) - start_time)
     output "#{config[:scheme]}.#{app_group}.process_#{count}.processed", processed, timestamp
     output "#{config[:scheme]}.#{app_group}.process_#{count}.pid", pid, timestamp
@@ -51,8 +50,8 @@ class PassengerMetrics < Sensu::Plugin::Metric::CLI::Graphite
   end
 
   def process_application_groups(supergroups, timestamp)
-    for group in supergroups.children.xpath('//supergroup')
-      app_group = group.xpath('//supergroup/name')[0].children.to_s.gsub("\/", "_")
+    supergroups.children.xpath('//supergroup').each do |group|
+      app_group = group.xpath('//supergroup/name')[0].children.to_s.tr('/', '_')
       app_queue = group.xpath('.//group/get_wait_list_size')[0].children.to_s
       app_capacity_used = group.xpath('//supergroup/capacity_used')[0].children.to_s
       processes_being_spawned = group.xpath('//supergroup/group/processes_being_spawned')[0].children.to_s
@@ -60,24 +59,24 @@ class PassengerMetrics < Sensu::Plugin::Metric::CLI::Graphite
       output "#{config[:scheme]}.#{app_group}.processes", app_capacity_used, timestamp
       output "#{config[:scheme]}.#{app_group}.processes_being_spawned", processes_being_spawned, timestamp
       i = 1
-      for process in group.xpath('//supergroup/group/processes').children.xpath('//process')
+      group.xpath('//supergroup/group/processes').children.xpath('//process').each do |process|
         output_process(process, app_group, i, timestamp)
-        i = i + 1
+        i += 1
       end
     end
   end
 
   def parser_main(command_output, timestamp)
-      processes = command_output.xpath('//process_count').children[0].to_s
-      max_pool_size = command_output.xpath('//max').children[0].to_s
-      top_level_queue = command_output.xpath('//get_wait_list_size').children[0].to_s
-      return max_pool_size, processes, top_level_queue, timestamp
+    processes = command_output.xpath('//process_count').children[0].to_s
+    max_pool_size = command_output.xpath('//max').children[0].to_s
+    top_level_queue = command_output.xpath('//get_wait_list_size').children[0].to_s
+    [max_pool_size, processes, top_level_queue, timestamp]
   end
 
   def main_output(max_pool_size, processes, top_level_queue, timestamp)
-      output "#{config[:scheme]}.max_pool_size", max_pool_size, timestamp
-      output "#{config[:scheme]}.processes", processes, timestamp
-      output "#{config[:scheme]}.top_level_queue", top_level_queue, timestamp
+    output "#{config[:scheme]}.max_pool_size", max_pool_size, timestamp
+    output "#{config[:scheme]}.processes", processes, timestamp
+    output "#{config[:scheme]}.top_level_queue", top_level_queue, timestamp
   end
 
   def run
