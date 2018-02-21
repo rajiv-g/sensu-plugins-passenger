@@ -28,13 +28,13 @@ require 'nokogiri'
 
 class PassengerCheck < Sensu::Plugin::Check::CLI
   option :qwarn,
-         short: '-w PERCENT',
+         long: '--queue-warning PERCENT',
          description: 'Warn if PERCENT or more of queue length',
          proc: proc(&:to_f),
          default: 1
 
   option :qcrit,
-         short: '-c PERCENT',
+         long: '--queue-critical PERCENT',
          description: 'Critical if PERCENT or more of queue length',
          proc: proc(&:to_f),
          default: 1.5
