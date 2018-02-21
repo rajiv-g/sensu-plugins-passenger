@@ -43,8 +43,12 @@ class PassengerCheck < Sensu::Plugin::Check::CLI
     "Request Queue Length: #{@top_level_queue}"
   end
 
+  def passenger_status
+    `passenger-status --show=xml`
+  end
+
   def run
-    command_output = Nokogiri::XML.parse `passenger-status --show=xml`
+    command_output = Nokogiri::XML.parse passenger_status
     @top_level_queue = command_output.xpath('//get_wait_list_size').children[0].to_s.to_f
 
     critical usage_summary if @top_level_queue >= config[:qcrit]

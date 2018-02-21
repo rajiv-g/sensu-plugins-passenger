@@ -79,9 +79,13 @@ class PassengerMetrics < Sensu::Plugin::Metric::CLI::Graphite
     output "#{config[:scheme]}.top_level_queue", top_level_queue, timestamp
   end
 
+  def passenger_status
+    `passenger-status --show=xml`
+  end
+
   def run
     timestamp = Time.now.to_i
-    command_output = Nokogiri::XML.parse `passenger-status --show=xml`
+    command_output = Nokogiri::XML.parse passenger_status
     if command_output
       main_output(*parser_main(command_output, timestamp))
       process_application_groups(command_output.xpath('//supergroups').xpath('//supergroup'), timestamp)
