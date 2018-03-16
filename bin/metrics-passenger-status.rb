@@ -80,7 +80,7 @@ class PassengerMetrics < Sensu::Plugin::Metric::CLI::Graphite
   end
 
   def passenger_status
-    `passenger-status --show=xml`
+    `sudo passenger-status --show=xml`
   end
 
   def run

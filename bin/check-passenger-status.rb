@@ -44,7 +44,7 @@ class PassengerCheck < Sensu::Plugin::Check::CLI
   end
 
   def passenger_status
-    `passenger-status --show=xml`
+    `sudo passenger-status --show=xml`
   end
 
   def run
