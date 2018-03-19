@@ -51,7 +51,7 @@ class PassengerMetrics < Sensu::Plugin::Metric::CLI::Graphite
 
   def process_application_groups(supergroups, timestamp)
     supergroups.children.xpath('//supergroup').each do |group|
-      app_group = group.xpath('//supergroup/name')[0].children.to_s.tr('/', '_')
+      app_group = group.xpath('//supergroup/name')[0].children.to_s[/\(.*?\)/].tr('()', '')
       app_queue = group.xpath('.//group/get_wait_list_size')[0].children.to_s
       app_capacity_used = group.xpath('//supergroup/capacity_used')[0].children.to_s
       processes_being_spawned = group.xpath('//supergroup/group/processes_being_spawned')[0].children.to_s
