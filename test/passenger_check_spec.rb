@@ -38,8 +38,8 @@ describe 'PassengerCheck' do
     end
   end
 
-  describe 'When threshold reached warning' do
-    it 'Raise warning' do
+  describe 'When threshold reached critical' do
+    it 'Raise critical' do
       config = {
         qwarn: 0,
         qcrit: 1
@@ -47,6 +47,18 @@ describe 'PassengerCheck' do
       @check.config = config
       allow(@check).to receive(:passenger_status).and_return(open(File.dirname(__FILE__) + '/fixture/warn.txt').read)
       expect(@check.run).to eq('triggered critical: Request Queue Length: 0, Application Queue Length: 1')
+    end
+  end
+
+  describe 'When threshold reached warning' do
+    it 'Raise critical' do
+      config = {
+        qwarn: 1,
+        qcrit: 2
+      }
+      @check.config = config
+      allow(@check).to receive(:passenger_status).and_return(open(File.dirname(__FILE__) + '/fixture/warn.txt').read)
+      expect(@check.run).to eq('triggered warning: Request Queue Length: 0, Application Queue Length: 1')
     end
   end
 end
