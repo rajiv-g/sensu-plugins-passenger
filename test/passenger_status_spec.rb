@@ -1,25 +1,40 @@
-require_relative './plugin_stub.rb'
+# frozen_string_literal: true
+
+require 'nokogiri'
 require_relative './spec_helper.rb'
-require_relative '../bin/metrics-passenger-status'
-require_relative '../bin/check-passenger-status'
+require_relative '../bin/metrics-passenger-status.rb'
 
-RSpec.configure do |c|
-  c.before { allow($stdout).to receive(:puts) }
-  c.before { allow($stderr).to receive(:puts) }
-end
+class PassengerMetrics
+  at_exit do
+    @@autorun = false
+  end
 
-describe PassengerMetrics, 'run' do
-  it 'returns metrics' do
-    plugin = PassengerMetrics.new
-    allow(plugin).to receive(:passenger_status).and_return(open(File.dirname(__FILE__) + '/fixture/output.txt').read)
-    expect(-> { plugin.run }).to raise_error SystemExit
+  def critical(msg = nil)
+    "triggered critical: #{msg}"
+  end
+
+  def warning(msg = nil)
+    "triggered warning: #{msg}"
+  end
+
+  def ok(msg = nil)
+    "triggered ok: #{msg}"
+  end
+
+  def unknown(msg = nil)
+    "triggered unknown: #{msg}"
   end
 end
 
-describe PassengerMetrics, 'run' do
-  it 'returns metrics' do
-    plugin = PassengerCheck.new
-    allow(plugin).to receive(:passenger_status).and_return(open(File.dirname(__FILE__) + '/fixture/output.txt').read)
-    expect(-> { plugin.run }).to raise_error SystemExit
+describe 'PassengerMetrics' do
+  before :all do
+    @check =  PassengerMetrics.new
+  end
+
+  describe 'When settings are default' do
+    it 'ran sucessfully' do
+      allow(@check).to receive(:passenger_status).and_return(open(File.dirname(__FILE__) + '/fixture/output.txt').read)
+      expect { @check.run }.to_not raise_error
+    end
   end
 end
