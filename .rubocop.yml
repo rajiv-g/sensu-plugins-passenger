@@ -28,3 +28,10 @@ RegexpLiteral:
 
 Style/Documentation:
   Enabled: false
+
+Metrics/BlockLength:
+  ExcludedMethods: ['describe', 'it']
+
+Style/ClassVars:
+  Exclude:
+    - test/**/*.rb
