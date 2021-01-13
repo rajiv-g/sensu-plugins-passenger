@@ -30,7 +30,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.test_files             = s.files.grep(%r{^(test|spec|features)/})
   s.version                = SensuPluginsPassenger::Version::VER_STRING
 
-  s.add_runtime_dependency 'nokogiri',     '~> 1.8', '>= 1.8.2'
+  s.add_runtime_dependency 'nokogiri',     '~> 1.8.5'
   s.add_runtime_dependency 'sensu-plugin', '~> 1.2'
 
   s.add_development_dependency 'bundler',                   '~> 1.7'
